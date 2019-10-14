@@ -1,0 +1,45 @@
+pipeline {
+  
+  environment {
+    registry = "sergioguoz/serinario1p1usac"
+    registryCredential = 'dockerhub'
+    dockerImageAPI = ''
+    dockerImageMYSQL = ''
+    dockerImageNGINX = ''
+  }
+  
+  agent any
+  
+  stages {
+    stage('Cloning Git') {
+      steps {
+          git(
+            url: 'https://github.com/SergioGuoz/SS1_Proyecto1',
+		//credentialsId es credenciales de github -> creada en Credentials
+            credentialsId: 'gitCredentials'
+          )
+        }
+    }
+    stage('Building image') {
+      steps{
+        script {
+          dockerImageMYSQL = docker.build registry + ":$BUILD_NUMBER"
+        }
+      }
+    }
+    stage('Deploy Image') {
+      steps{
+        script {
+          docker.withRegistry( '', registryCredential ) {
+            dockerImage.push()
+          }
+        }
+      }
+    }
+    stage('Remove Unused docker image') {
+      steps{
+        sh "docker rmi $registry:$BUILD_NUMBER"
+      }
+    }
+  }
+}
