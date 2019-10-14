@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+	<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script> 
+	<script src="js/amazon-cognito-auth.min.js"></script>
+	<script src="https://sdk.amazonaws.com/js/aws-sdk-2.7.16.min.js"></script> 
+	<script src="js/amazon-cognito-identity.min.js"></script>   
+	<script src="js/config.js"></script>
+
+
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <script src="js/bootstrap.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+
+  </head>
+    </style>
+<style type="text/css">
+html,
+body {
+  height: 100%;
+
+}
+
+body {
+  margin: 60px;
+  background: linear-gradient(45deg, #49a09d, #5f2c82);
+  font-family: sans-serif;
+  font-weight: 100;
+  color:white;
+}
+
+.container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+
+</style>
+  <body>
+
+      
+    <div class="container">
+      <div class="col-6">
+        <form>
+          <h1> Inicio de Sesion</h1>
+          <div class="form-group">
+          <input type="text" id="usuario"  placeholder="Email address" name="username" required autofocus>
+          </div>
+          <div class="form-group">
+          <input type="password" id="passworduser"  placeholder="Password" name="password" required>
+          </div>    
+          <button type="button" class="btn btn-primary" onclick="Ingresar()">Ingresar</button>
+        </form>
+      </div>
+    </div>
+    
+
+<script>
+  function Ingresar() {
+    
+	var authenticationData = {
+        Username : document.getElementById("usuario").value,
+        Password : document.getElementById("passworduser").value,
+    };
+	
+    var authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails(authenticationData);
+    
+	var poolData = {
+        UserPoolId : _config.cognito.userPoolId, 
+        ClientId : _config.cognito.clientId,
+    };
+	
+    var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+	
+    var userData = {
+        Username : document.getElementById("usuario").value,
+        Pool : userPool,
+    };
+	
+    var cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+    
+	cognitoUser.authenticateUser(authenticationDetails, {
+        onSuccess: function (result) {
+			    var accessToken = result.getAccessToken().getJwtToken();
+			    console.log(accessToken);	
+          location.replace("https://seminariosistemas.s3.us-east-2.amazonaws.com/home.html");
+        },
+        onFailure: function(err) {
+            alert(err.message || JSON.stringify(err));
+        },
+        newPasswordRequired: function(userAttributes, requiredAttributes) {
+        console.log("User needs new password");
+        res({userAttributes, requiredAttributes});
+    },
+    });
+  }
+</script>
+</body>
+</html>
